@@ -4,11 +4,11 @@ const router = express.Router();
 const collegecontroller = require("../controlles/collegecontroller")
 const interncontroller = require("../controlles/interncontroller")
 
-router.post("/functionup/colleges", collegecontroller.createCollege)
+router.post("/colleges", collegecontroller.createCollege)
 
-router.post("/functionup/interns", interncontroller.createIntern)
+router.post("/interns", interncontroller.createIntern)
 
-router.get("/functionup/collegeDetails",interncontroller.getIntern)
+router.get("/collegeDetails",interncontroller.getIntern)
 
 
 

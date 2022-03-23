@@ -20,6 +20,22 @@ const createIntern = async function (req, res) {
     try {
         let data = req.body
         let mobile1 = data.mobile
+        let email1 = data.email
+        let collegeid = data.collegeId
+
+        let emailRepet = await internmodel.findOne({ email1 })
+        if (emailRepet) {
+            res.status(400).send("email already exist")
+        }
+
+        let mobileRepeat = await internmodel.findOne({ mobile1 })
+        if (mobileRepeat) {
+            res.status(400).send("mobile number already exist")
+        }
+
+        let college1 = await collegemodel.findById(collegeid)
+        if (!college1) return res.status(400).send("college id is not valid")
+
 
         const { name, email, mobile } = data
 
@@ -35,7 +51,6 @@ const createIntern = async function (req, res) {
 
         let req2 = isValid(mobile)
         if (!req2) return res.status(400).send("Mobile number is required ")
-
 
 
         if (mobile1.length != 10) return res.status(400).send("Mobile number contain 10 digits")
@@ -87,7 +102,7 @@ const getIntern = async function (req, res) {
             interest: students
         }
 
-        res.status(201).send({ College_details: ObjectData })
+        res.status(200).send({ College_details: ObjectData })
     }
     catch (error) {
         res.status(500).send({ msg: error.message })

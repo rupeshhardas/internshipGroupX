@@ -15,6 +15,12 @@ if ( typeof(value) == String || Array || URL && value.length > 0) {
 const  createCollege = async function(req, res) {
     try{
     let data = req.body 
+    let name1 = data.name
+
+    let repeatName = await collegemodel.findOne({name1})
+    if(repeatName){
+        return res.status(400).send("name is already exist")
+    }
 
     const{name,fullName,logoLink} = data 
 
@@ -27,6 +33,8 @@ const  createCollege = async function(req, res) {
     let req2 = isValid(logoLink)
     if(!req2) return  res.status(400).send("Logo link is requiured ")
 
+
+
     let colleges = await collegemodel.create(data)
     res.status(201).send({status : true , data : colleges})
     }
@@ -36,3 +44,14 @@ const  createCollege = async function(req, res) {
 }
 
 module.exports.createCollege = createCollege
+
+
+
+
+// const alreadyUsed = await collegeModel.findOne({fullName})
+
+// if(alreadyUsed){
+
+//     return res.status(400).send({status:false, msg:`${fullName} College is already exists`})   //checking the fullName is already exist or not.
+
+// }
