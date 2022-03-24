@@ -10,7 +10,7 @@ const isValid = function (value) {
     if (value.length == 0) {
         return false
     }
-    if (value == String || Array && value.length > 0) {
+    if (value == String || Array || Number && value.length >0 ) {
         return true
     }
 }
@@ -23,15 +23,15 @@ const createIntern = async function (req, res) {
         let email1 = data.email
         let collegeid = data.collegeId
 
-        let emailRepet = await internmodel.findOne({ email1 })
-        if (emailRepet) {
-            res.status(400).send("email already exist")
-        }
+        if(Object.keys(data) ==0) return res.status(400).send({ERROR : "bad request"})
 
-        let mobileRepeat = await internmodel.findOne({ mobile1 })
-        if (mobileRepeat) {
-            res.status(400).send("mobile number already exist")
-        }
+        let emailRepet = await internmodel.findOne({email: email1 })
+        if (emailRepet) return res.status(400).send("email already exist")
+        
+
+        let mobileRepeat = await internmodel.findOne({mobile: mobile1 })
+        if (mobileRepeat == email1)  return res.status(400).send("mobile number already exist")
+        
 
         let college1 = await collegemodel.findById(collegeid)
         if (!college1) return res.status(400).send("college id is not valid")
@@ -46,19 +46,13 @@ const createIntern = async function (req, res) {
         if (!req1) return res.status(400).send("Email is required")
 
         if (!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email))) {
-            return res.status(400).send("Plese enter valid email address")
+            return res.status(400).send("Please enter valid email address")
         }
 
         let req2 = isValid(mobile)
         if (!req2) return res.status(400).send("Mobile number is required ")
 
-
-        if (mobile1.length != 10) return res.status(400).send("Mobile number contain 10 digits")
-
-        let data1 = data.collegeId
-        let findid = await collegemodel.findById(data1)
-        if (!findid) return res.status(400).send("College is not in list ")
-
+       
         let interndata = await internmodel.create(data)
         res.status(201).send({ status: true, msg: interndata })
     }
@@ -72,37 +66,23 @@ const createIntern = async function (req, res) {
 const getIntern = async function (req, res) {
     try {
         let data = req.query.collegeName
-        if (!data) { return res.status(400).send({ status: false, msg: "plese provide valid college details" }) }
+        if (!data) { return res.status(400).send({msg: "plese provide valid college details" }) }
 
 
-        let colleged = await collegemodel.find({ name: data, isDeleted: false })
+        let colleged = await collegemodel.findOne({ name: data, isDeleted: false })
         if (!colleged) return res.status(400).send({ msg: "College is not in the list " })
 
-        let List1 = colleged[0]._id
+        let temp = colleged
 
-        console.log(List1)
+        let List1 = colleged._id
 
-        let interned = await internmodel.find({ "collegeId": List1, isDeleted: false })
-        if (!interned) return res.status(400).send("college id not exist")
-        students = []
+        let interned = await internmodel.find({ "collegeId": List1, isDeleted: false }).select({_id:1,name:1,email:1,mobile:1})
+        if (!interned) return res.status(400).send({msg :"no interned applied  for this college"})
 
-        for (let i = 0; i < interned.length; i++) {
-            let Object = {}
-            Object._id = interned[i]._id
-            Object.name = interned[i].name
-            Object.email = interned[i].email
-            Object.mobile = interned[i].mobile
-            students.push(Object)
-        }
 
-        const ObjectData = {
-            name: colleged[0].name,
-            fullName: colleged[0].fullName,
-            logoLink: colleged[0].logoLink,
-            interest: students
-        }
+        let details = {name : temp.name,fullName : temp.fullName,logoLink:temp.logoLink,Interest:interned}
 
-        res.status(200).send({ College_details: ObjectData })
+        res.status(200).send({msg:"college created" , College_details: details })
     }
     catch (error) {
         res.status(500).send({ msg: error.message })

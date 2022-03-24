@@ -16,11 +16,10 @@ const  createCollege = async function(req, res) {
     try{
     let data = req.body 
     let name1 = data.name
+    
+    let repeatName = await collegemodel.findOne({name : name1})
+    if(repeatName) return res.status(400).send("name is already exist")
 
-    let repeatName = await collegemodel.findOne({name1})
-    if(repeatName){
-        return res.status(400).send("name is already exist")
-    }
 
     const{name,fullName,logoLink} = data 
 
@@ -33,6 +32,8 @@ const  createCollege = async function(req, res) {
     let req2 = isValid(logoLink)
     if(!req2) return  res.status(400).send("Logo link is requiured ")
 
+    if (!(/(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/.test(logoLink)))
+    return res.status(400).send({ status: false, msg: " logoLink is invalid" })
 
 
     let colleges = await collegemodel.create(data)
